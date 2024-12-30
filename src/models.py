@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from src.encoding import HashGridSDF
+from src.encoding import HashGridSDF, VanillaHashGrid
 
 class SDFNetwork(nn.Module):
     def __init__(self, hash_encoder: HashGridSDF, hidden_dim=64):
@@ -32,3 +32,24 @@ class SDFNetwork(nn.Module):
                 sdf.sum(), x, create_graph=True, retain_graph=True
             )[0]
         return grad
+    
+class VanillaNetwork(nn.Module):
+    def __init__(self, hash_encoder: VanillaHashGrid, hidden_dim=64):
+        super().__init__()
+        self.hash_encoder = hash_encoder
+        input_dim = hash_encoder.n_features
+
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, 1)  # Output density
+        )
+
+    def forward(self, x):
+        features = self.hash_encoder(x)
+        density = self.net(features)
+        return density
