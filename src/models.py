@@ -2,11 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from src.encoding import HashGridSDF
-from src.models import SDFNetwork
 
-hash_encoder = HashGridSDF()
-
-model = SDFNetwork(hash_encoder=hash_encoder)
 class SDFNetwork(nn.Module):
     def __init__(self, hash_encoder: HashGridSDF, hidden_dim=64):
         super().__init__()
